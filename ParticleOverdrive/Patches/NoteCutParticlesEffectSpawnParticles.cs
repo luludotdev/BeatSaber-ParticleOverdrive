@@ -15,12 +15,12 @@ namespace ParticleOverdrive.Patches
     {
         static void Prefix(ref NoteCutParticlesEffect __instance, ref int sparkleParticlesCount, ref int explosionParticlesCount)
         {
-            float count = 100f;
+            float multi = Plugin.ParticleMultiplier;
 
             ParticleSystem.MainModule main = ((ParticleSystem)__instance.GetField("_sparklesPS")).main;
 
-            sparkleParticlesCount = 150 * Mathf.FloorToInt(count);
-            main.maxParticles = 150 * Mathf.FloorToInt(count * 2f);
+            sparkleParticlesCount = 150 * Mathf.FloorToInt(multi);
+            main.maxParticles = 150 * Mathf.FloorToInt(multi * 1.1f);
         }
     }
 }

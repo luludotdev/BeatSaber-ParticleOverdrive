@@ -55,19 +55,28 @@ namespace ParticleOverdrive.Misc
             return ((obj is Type) ? ((Type)obj) : obj.GetType()).GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(obj);
         }
 
-        public static T GetProperty<T>(this object obj, string propertyName)
+        public static Component CopyComponent(Component original, Type originalType, Type overridingType, GameObject destination)
         {
-            return (T)((object)obj.GetProperty(propertyName));
+            var copy = destination.AddComponent(overridingType);
+
+            Type type = originalType;
+            while (type != typeof(MonoBehaviour))
+            {
+                CopyForType(type, original, copy);
+                type = type.BaseType;
+            }
+
+            return copy;
         }
 
-        public static T InvokeMethod<T>(this object obj, string methodName, params object[] methodParams)
+        private static void CopyForType(Type type, Component source, Component destination)
         {
-            return (T)((object)obj.InvokeMethod(methodName, methodParams));
-        }
+            FieldInfo[] myObjectFields = type.GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetField);
 
-        public static object InvokeMethod(this object obj, string methodName, params object[] methodParams)
-        {
-            return ((obj is Type) ? ((Type)obj) : obj.GetType()).GetMethod(methodName, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Invoke(obj, methodParams);
+            foreach (FieldInfo fi in myObjectFields)
+            {
+                fi.SetValue(destination, fi.GetValue(source));
+            }
         }
     }
 }
