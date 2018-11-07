@@ -6,8 +6,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using VRUI;
 using TMPro;
+using ParticleOverdrive.Misc;
 
-namespace ParticleOverdrive.Misc
+namespace ParticleOverdrive.UI.Settings
 {
     public class ListViewController : ListSettingsController
     {
@@ -312,7 +313,7 @@ namespace ParticleOverdrive.Misc
             {
                 _mainMenuViewController = Resources.FindObjectsOfTypeAll<MainMenuViewController>().First();
                 var _menuMasterViewController = Resources.FindObjectsOfTypeAll<StandardLevelSelectionFlowCoordinator>().First();
-                prompt = ReflectionUtil.GetPrivateField<SimpleDialogPromptViewController>(_menuMasterViewController, "_simpleDialogPromptViewController");
+                prompt = ReflectionUtil.GetField<SimpleDialogPromptViewController>(_menuMasterViewController, "_simpleDialogPromptViewController");
             }
         }
 
@@ -346,7 +347,7 @@ namespace ParticleOverdrive.Misc
             {
                 tableCell = Resources.FindObjectsOfTypeAll<MainSettingsTableCell>().FirstOrDefault();
                 // Get a refence to the Settings Table cell text in case we want to change fint size, etc
-                var text = tableCell.GetPrivateField<TextMeshProUGUI>("_settingsSubMenuText");
+                var text = tableCell.GetField<TextMeshProUGUI>("_settingsSubMenuText");
             }
 
             var temp = Resources.FindObjectsOfTypeAll<SettingsNavigationController>().FirstOrDefault();
@@ -356,13 +357,13 @@ namespace ParticleOverdrive.Misc
             Transform mainContainer = CleanScreen(tweakSettingsObject.transform);
 
             var tweaksSubMenu = new SettingsSubMenuInfo();
-            tweaksSubMenu.SetPrivateField("_menuName", name);
-            tweaksSubMenu.SetPrivateField("_controller", tweakSettingsObject.GetComponent<VRUIViewController>());
+            tweaksSubMenu.SetField("_menuName", name);
+            tweaksSubMenu.SetField("_controller", tweakSettingsObject.GetComponent<VRUIViewController>());
 
             var mainSettingsMenu = Resources.FindObjectsOfTypeAll<MainSettingsMenuViewController>().FirstOrDefault();
-            var subMenus = mainSettingsMenu.GetPrivateField<SettingsSubMenuInfo[]>("_settingsSubMenuInfos").ToList();
+            var subMenus = mainSettingsMenu.GetField<SettingsSubMenuInfo[]>("_settingsSubMenuInfos").ToList();
             subMenus.Add(tweaksSubMenu);
-            mainSettingsMenu.SetPrivateField("_settingsSubMenuInfos", subMenus.ToArray());
+            mainSettingsMenu.SetField("_settingsSubMenuInfos", subMenus.ToArray());
 
             SubMenu menu = new SubMenu(mainContainer);
             return menu;

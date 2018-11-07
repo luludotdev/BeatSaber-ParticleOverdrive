@@ -1,7 +1,7 @@
 ﻿using System;
-using ParticleOverdrive.Misc;
 using UnityEngine;
 using IllusionPlugin;
+using ParticleOverdrive.UI.Settings;
 
 namespace ParticleOverdrive.UI
 {
