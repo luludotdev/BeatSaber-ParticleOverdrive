@@ -11,6 +11,14 @@ namespace ParticleOverdrive.UI
         {
             var subMenu = SettingsUI.CreateSubMenu("Particle Overdrive");
 
+            BoolViewController noiseEnabled = subMenu.AddBool("Camera Noise");
+            noiseEnabled.GetValue += (() => Plugin._noiseController.Enabled);
+            noiseEnabled.SetValue += delegate (bool value)
+            {
+                Plugin._noiseController.Enabled = value;
+                ModPrefs.SetBool(Plugin.ModPrefsKey, "cameraNoise", value);
+            };
+
             BoolViewController dustEnabled = subMenu.AddBool("Global Dust Particles");
             dustEnabled.GetValue += (() => Plugin._particleController.Enabled);
             dustEnabled.SetValue += delegate (bool value)

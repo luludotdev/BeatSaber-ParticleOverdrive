@@ -21,6 +21,7 @@ namespace ParticleOverdrive
 
         public static GameObject _controller;
         public static WorldParticleController _particleController;
+        public static CameraNoiseController _noiseController;
 
         public static readonly string ModPrefsKey = "ParticleOverdrive";
 
@@ -55,16 +56,23 @@ namespace ParticleOverdrive
                 GameObject.DontDestroyOnLoad(_controller);
 
                 _particleController = _controller.AddComponent<WorldParticleController>();
+                _noiseController = _controller.AddComponent<CameraNoiseController>();
 
                 bool particleState = ModPrefs.GetBool(ModPrefsKey, "dustParticles", true, true);
                 _particleController.Init(particleState);
+
+                bool noiseState = ModPrefs.GetBool(ModPrefsKey, "cameraNoise", true, true);
+                _noiseController.Init(noiseState);
             }
 
             if (scene.name == "Menu")
                 PluginUI.CreateSettingsUI();
 
             if (menuEnv.Contains(scene.name) || gameEnv.Contains(scene.name))
+            {
                 _particleController.OnSceneChange(scene);
+                _noiseController.OnSceneChange(scene);
+            }
         }
 
         public void OnApplicationQuit()

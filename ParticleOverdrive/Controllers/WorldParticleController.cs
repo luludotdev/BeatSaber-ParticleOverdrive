@@ -32,20 +32,25 @@ namespace ParticleOverdrive.Controllers
                 Logger.Debug($"{action} world particles!");
 
                 _enabled = value;
-                DustPS.gameObject.SetActive(_enabled);
+                Set();
             }
         }
 
         public void Init(bool state)
         {
             DontDestroyOnLoad(this);
-            Enabled = state;
+            _enabled = state;
         }
 
         private ParticleSystem Find()
         {
             Transform transform = _camera.transform.Find("DustPS");
             return transform.GetComponent<ParticleSystem>();
+        }
+
+        private void Set()
+        {
+            DustPS.gameObject.SetActive(_enabled);
         }
 
         public void OnSceneChange(Scene scene)
@@ -69,7 +74,7 @@ namespace ParticleOverdrive.Controllers
                 Logger.Debug("Found new ParticleSystem!");
             }
 
-            Enabled = _enabled;
+            Set();
         }
     }
 }

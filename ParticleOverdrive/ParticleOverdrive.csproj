@@ -66,6 +66,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\CameraNoiseController.cs" />
     <Compile Include="Controllers\IGlobalController.cs" />
     <Compile Include="Misc\Logger.cs" />
     <Compile Include="Misc\ReflectionUtil.cs" />
