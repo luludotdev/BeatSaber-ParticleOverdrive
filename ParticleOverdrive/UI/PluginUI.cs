@@ -12,10 +12,10 @@ namespace ParticleOverdrive.UI
             var subMenu = SettingsUI.CreateSubMenu("Particle Overdrive");
 
             BoolViewController dustEnabled = subMenu.AddBool("Global Dust Particles");
-            dustEnabled.GetValue += (() => Plugin._controller.DustParticles);
+            dustEnabled.GetValue += (() => Plugin._particleController.Enabled);
             dustEnabled.SetValue += delegate (bool value)
             {
-                Plugin._controller.DustParticles = value;
+                Plugin._particleController.Enabled = value;
                 ModPrefs.SetBool(Plugin.ModPrefsKey, "dustParticles", value);
             };
 

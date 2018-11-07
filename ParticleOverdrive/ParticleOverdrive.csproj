@@ -66,6 +66,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\IGlobalController.cs" />
     <Compile Include="Misc\Logger.cs" />
     <Compile Include="Misc\ReflectionUtil.cs" />
     <Compile Include="Misc\SettingsUI.cs" />
@@ -73,7 +74,7 @@
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UI\PluginUI.cs" />
-    <Compile Include="WorldEffectController.cs" />
+    <Compile Include="Controllers\WorldParticleController.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -5,8 +5,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Harmony;
 using IllusionPlugin;
-using Logger = ParticleOverdrive.Misc.Logger;
 using ParticleOverdrive.UI;
+using ParticleOverdrive.Controllers;
+using Logger = ParticleOverdrive.Misc.Logger;
 
 namespace ParticleOverdrive
 {
@@ -18,7 +19,8 @@ namespace ParticleOverdrive
         private static readonly string[] menuEnv = { "Init", "Menu" };
         private static readonly string[] gameEnv = { "DefaultEnvironment", "BigMirrorEnvironment", "TriangleEnvironment", "NiceEnvironment" };
 
-        public static WorldEffectController _controller;
+        public static GameObject _controller;
+        public static WorldParticleController _particleController;
 
         public static readonly string ModPrefsKey = "ParticleOverdrive";
 
@@ -49,18 +51,20 @@ namespace ParticleOverdrive
         {
             if (_controller == null)
             {
-                GameObject controllerObj = new GameObject("WorldEffectController");
-                _controller = controllerObj.AddComponent<WorldEffectController>();
+                _controller = new GameObject("WorldEffectController");
+                GameObject.DontDestroyOnLoad(_controller);
 
-                bool state = ModPrefs.GetBool(ModPrefsKey, "dustParticles", true, true);
-                _controller.Init(state);
+                _particleController = _controller.AddComponent<WorldParticleController>();
+
+                bool particleState = ModPrefs.GetBool(ModPrefsKey, "dustParticles", true, true);
+                _particleController.Init(particleState);
             }
 
             if (scene.name == "Menu")
                 PluginUI.CreateSettingsUI();
 
             if (menuEnv.Contains(scene.name) || gameEnv.Contains(scene.name))
-                _controller.OnSceneChange(scene);
+                _particleController.OnSceneChange(scene);
         }
 
         public void OnApplicationQuit()

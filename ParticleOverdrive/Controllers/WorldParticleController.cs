@@ -4,9 +4,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Logger = ParticleOverdrive.Misc.Logger;
 
-namespace ParticleOverdrive
+namespace ParticleOverdrive.Controllers
 {
-    public class WorldEffectController : MonoBehaviour
+    public class WorldParticleController : MonoBehaviour, IGlobalController
     {
         private Camera _camera { get => Camera.main; }
 
@@ -16,44 +16,41 @@ namespace ParticleOverdrive
             get
             {
                 if (_dustPS == null)
-                    _dustPS = FindDustPS();
+                    _dustPS = Find();
 
                 return _dustPS;
             }
         }
 
-        private bool _dustEnabled;
-        public bool DustParticles
+        private bool _enabled;
+        public bool Enabled
         {
-            get => _dustEnabled;
+            get => _enabled;
             set
             {
-                _dustEnabled = value;
-                SetDustParticles();
+                string action = value ? "Enabling" : "Disabling";
+                Logger.Debug($"{action} world particles!");
+
+                _enabled = value;
+                DustPS.gameObject.SetActive(_enabled);
             }
         }
 
         public void Init(bool state)
         {
             DontDestroyOnLoad(this);
-            DustParticles = state;
+            Enabled = state;
         }
 
-        private ParticleSystem FindDustPS()
+        private ParticleSystem Find()
         {
-            Transform dustPSTransform = _camera.transform.Find("DustPS");
-            ParticleSystem ps = dustPSTransform.GetComponent<ParticleSystem>();
-
-            return ps;
-        }
-
-        private void SetDustParticles()
-        {
-            DustPS.gameObject.SetActive(_dustEnabled);
+            Transform transform = _camera.transform.Find("DustPS");
+            return transform.GetComponent<ParticleSystem>();
         }
 
         public void OnSceneChange(Scene scene)
         {
+            Logger.Debug("Scene change triggered!");
             StartCoroutine(SceneChangeHandler());
         }
 
@@ -61,14 +58,18 @@ namespace ParticleOverdrive
         {
             if (_dustPS == null)
             {
+                Logger.Debug("ParticleSystem is null, checking for new one...");
+
                 while (_dustPS == null)
                 {
                     yield return new WaitForSeconds(0.5f);
-                    _dustPS = FindDustPS();
+                    _dustPS = Find();
                 }
+
+                Logger.Debug("Found new ParticleSystem!");
             }
 
-            SetDustParticles();
+            Enabled = _enabled;
         }
     }
 }
