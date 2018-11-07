@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ParticleOverdrive.Misc;
 using UnityEngine;
 using IllusionPlugin;
@@ -14,6 +10,14 @@ namespace ParticleOverdrive.UI
         public static void CreateSettingsUI()
         {
             var subMenu = SettingsUI.CreateSubMenu("Particle Overdrive");
+
+            BoolViewController dustEnabled = subMenu.AddBool("Global Dust Particles");
+            dustEnabled.GetValue += (() => Plugin._controller.DustParticles);
+            dustEnabled.SetValue += delegate (bool value)
+            {
+                Plugin._controller.DustParticles = value;
+                ModPrefs.SetBool(Plugin.ModPrefsKey, "dustParticles", value);
+            };
 
             float[] values = new float[]
             {
@@ -109,7 +113,7 @@ namespace ParticleOverdrive.UI
             particleCount.SetValue += delegate (float value)
             {
                 Plugin.ParticleMultiplier = value;
-                ModPrefs.SetFloat("ParticleOverdrive", "particleMultiplier", value);
+                ModPrefs.SetFloat(Plugin.ModPrefsKey, "particleMultiplier", value);
             };
         }
     }

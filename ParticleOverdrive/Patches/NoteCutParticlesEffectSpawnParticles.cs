@@ -20,7 +20,7 @@ namespace ParticleOverdrive.Patches
             ParticleSystem.MainModule main = ((ParticleSystem)__instance.GetField("_sparklesPS")).main;
 
             sparkleParticlesCount = 150 * Mathf.FloorToInt(multi);
-            main.maxParticles = 150 * Mathf.FloorToInt(multi * 1.1f);
+            main.maxParticles = 150 * Mathf.FloorToInt(multi * 2f);
         }
     }
 }

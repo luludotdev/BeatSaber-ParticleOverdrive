@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Reflection;
+using System.Linq;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using Harmony;
 using IllusionPlugin;
-using ParticleOverdrive.Misc;
+using Logger = ParticleOverdrive.Misc.Logger;
 using ParticleOverdrive.UI;
 
 namespace ParticleOverdrive
@@ -13,11 +15,17 @@ namespace ParticleOverdrive
         public string Name => "Particle Overdive";
         public string Version => "0.1.0";
 
+        private static readonly string[] env = { "DefaultEnvironment", "BigMirrorEnvironment", "TriangleEnvironment", "NiceEnvironment" };
+
+        public static WorldEffectController _controller;
+
+        public static readonly string ModPrefsKey = "ParticleOverdrive";
+
         public static float ParticleMultiplier;
 
         public void OnApplicationStart()
         {
-            ParticleMultiplier = ModPrefs.GetFloat("ParticleOverdrive", "particleMultiplier", 1, true);
+            ParticleMultiplier = ModPrefs.GetFloat(ModPrefsKey, "particleMultiplier", 1, true);
 
             try
             {
@@ -36,8 +44,20 @@ namespace ParticleOverdrive
 
         void SceneManagerOnActiveSceneChanged(Scene arg0, Scene scene)
         {
+            if (_controller == null)
+            {
+                GameObject controllerObj = new GameObject("WorldEffectController");
+                _controller = controllerObj.AddComponent<WorldEffectController>();
+
+                bool state = ModPrefs.GetBool(ModPrefsKey, "dustParticles", true, true);
+                _controller.Init(state);
+            }
+
             if (scene.name == "Menu")
                 PluginUI.CreateSettingsUI();
+
+            if (scene.name == "Menu" || env.Contains(scene.name))
+                _controller.OnSceneChange(scene);
         }
 
         public void OnApplicationQuit()
