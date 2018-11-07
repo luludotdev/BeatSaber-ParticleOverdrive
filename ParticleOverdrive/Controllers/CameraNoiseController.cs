@@ -36,10 +36,21 @@ namespace ParticleOverdrive.Controllers
         }
 
         private Texture2D _originalNoise;
+        private Texture2D _newNoise;
 
         public void Init(bool state)
         {
             DontDestroyOnLoad(this);
+
+            _newNoise = Texture2D.blackTexture;
+
+            Color32[] pixels = _newNoise.GetPixels32();
+            for (int i = 0; i < pixels.Length; i++)
+                pixels[i] = new Color32(0, 0, 0, 200);
+
+            _newNoise.SetPixels32(pixels);
+            _newNoise.Apply();
+
             _enabled = state;
         }
 
@@ -58,7 +69,7 @@ namespace ParticleOverdrive.Controllers
             if (_enabled)
                 _blueNoiseDithering.SetField("_noiseTexture", _originalNoise);
             else
-                _blueNoiseDithering.SetField("_noiseTexture", Texture2D.blackTexture);
+                _blueNoiseDithering.SetField("_noiseTexture", _newNoise);
         }
 
         private BlueNoiseDitheringUpdater Find()
