@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Reflection;
 using System.Linq;
 using UnityEngine;
@@ -22,11 +22,13 @@ namespace ParticleOverdrive
 
         public static readonly string ModPrefsKey = "ParticleOverdrive";
 
-        public static float ParticleMultiplier;
+        public static float SlashParticleMultiplier;
+        public static float ExplosionParticleMultiplier;
 
         public void OnApplicationStart()
         {
-            ParticleMultiplier = ModPrefs.GetFloat(ModPrefsKey, "particleMultiplier", 1, true);
+            SlashParticleMultiplier = ModPrefs.GetFloat(ModPrefsKey, "slashParticleMultiplier", 1, true);
+            ExplosionParticleMultiplier = ModPrefs.GetFloat(ModPrefsKey, "explosionParticleMultiplier", 1, true);
 
             try
             {

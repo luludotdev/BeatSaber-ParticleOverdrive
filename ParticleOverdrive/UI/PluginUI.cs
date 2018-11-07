@@ -107,13 +107,22 @@ namespace ParticleOverdrive.UI
                 200f
             };
 
-            ListViewController particleCount = subMenu.AddList("Slash Particles", values);
-            particleCount.FormatValue += ((float value) => $"{value * 100f}%");
-            particleCount.GetValue += (() => Plugin.ParticleMultiplier);
-            particleCount.SetValue += delegate (float value)
+            ListViewController slashParticleCount = subMenu.AddList("Slash Particles", values);
+            slashParticleCount.FormatValue += ((float value) => $"{value * 100f}%");
+            slashParticleCount.GetValue += (() => Plugin.SlashParticleMultiplier);
+            slashParticleCount.SetValue += delegate (float value)
             {
-                Plugin.ParticleMultiplier = value;
-                ModPrefs.SetFloat(Plugin.ModPrefsKey, "particleMultiplier", value);
+                Plugin.SlashParticleMultiplier = value;
+                ModPrefs.SetFloat(Plugin.ModPrefsKey, "slashParticleMultiplier", value);
+            };
+
+            ListViewController exploParticleCount = subMenu.AddList("Explosion Particles", values);
+            exploParticleCount.FormatValue += ((float value) => $"{value * 100f}%");
+            exploParticleCount.GetValue += (() => Plugin.ExplosionParticleMultiplier);
+            exploParticleCount.SetValue += delegate (float value)
+            {
+                Plugin.ExplosionParticleMultiplier = value;
+                ModPrefs.SetFloat(Plugin.ModPrefsKey, "explosionParticleMultiplier", value);
             };
         }
     }
