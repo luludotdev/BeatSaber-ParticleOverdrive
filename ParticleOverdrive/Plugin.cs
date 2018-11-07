@@ -14,7 +14,7 @@ namespace ParticleOverdrive
     public class Plugin : IPlugin
     {
         public string Name => "Particle Overdive";
-        public string Version => "0.1.0";
+        public string Version => "0.2.0";
 
         private static readonly string[] menuEnv = { "Init", "Menu" };
         private static readonly string[] gameEnv = { "DefaultEnvironment", "BigMirrorEnvironment", "TriangleEnvironment", "NiceEnvironment" };
