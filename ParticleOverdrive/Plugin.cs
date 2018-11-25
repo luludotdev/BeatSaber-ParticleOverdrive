@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Reflection;
 using System.Linq;
 using UnityEngine;
@@ -14,7 +14,7 @@ namespace ParticleOverdrive
     public class Plugin : IPlugin
     {
         public string Name => "Particle Overdive";
-        public string Version => "0.2.0";
+        public string Version => "0.3.0";
 
         private static readonly string[] env = { "Init", "Menu", "GameCore", "Credits" };
 
