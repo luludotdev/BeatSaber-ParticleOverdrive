@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Harmony;
 using UnityEngine;
 using ParticleOverdrive.Misc;
@@ -14,10 +15,14 @@ namespace ParticleOverdrive.Patches
             float slashMulti = Plugin.SlashParticleMultiplier;
             float exploMulti = Plugin.ExplosionParticleMultiplier;
 
-            ParticleSystem.MainModule slashPS = ((ParticleSystem)__instance.GetField("_sparklesPS")).main;
+            ParticleSystem[] slashPS = (ParticleSystem[])__instance.GetField("_sparklesPS");
+            foreach (ParticleSystem ps in slashPS)
+            {
+                ParticleSystem.MainModule main = ps.main;
+                main.maxParticles = 150 * Mathf.FloorToInt(slashMulti * 2f);
+            }
 
             sparkleParticlesCount = 150 * Mathf.FloorToInt(slashMulti);
-            slashPS.maxParticles = 150 * Mathf.FloorToInt(slashMulti * 2f);
 
             ParticleSystem.MainModule exploPS = ((ParticleSystem)__instance.GetField("_explosionPS")).main;
 
