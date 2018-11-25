@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Logger = ParticleOverdrive.Misc.Logger;
@@ -8,8 +9,6 @@ namespace ParticleOverdrive.Controllers
 {
     public class WorldParticleController : MonoBehaviour, IGlobalController
     {
-        private Camera _camera { get => Camera.main; }
-
         private ParticleSystem _dustPS;
         public ParticleSystem DustPS
         {
@@ -44,8 +43,8 @@ namespace ParticleOverdrive.Controllers
 
         private ParticleSystem Find()
         {
-            Transform transform = _camera.transform.Find("DustPS");
-            return transform.GetComponent<ParticleSystem>();
+            ParticleSystem[] pss = FindObjectsOfType<ParticleSystem>();
+            return pss.Where(x => x.name == "DustPS").FirstOrDefault();
         }
 
         private void Set()
@@ -61,18 +60,15 @@ namespace ParticleOverdrive.Controllers
 
         private IEnumerator SceneChangeHandler()
         {
-            if (_dustPS == null)
+            _dustPS = null;
+
+            while (_dustPS == null)
             {
-                Logger.Debug("ParticleSystem is null, checking for new one...");
-
-                while (_dustPS == null)
-                {
-                    yield return new WaitForSeconds(0.5f);
-                    _dustPS = Find();
-                }
-
-                Logger.Debug("Found new ParticleSystem!");
+                yield return new WaitForSeconds(0.5f);
+                _dustPS = Find();
             }
+
+            Logger.Debug("Found new ParticleSystem!");
 
             Set();
         }
