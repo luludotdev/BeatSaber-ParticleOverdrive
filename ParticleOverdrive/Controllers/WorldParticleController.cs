@@ -54,7 +54,6 @@ namespace ParticleOverdrive.Controllers
 
         public void OnSceneChange(Scene scene)
         {
-            Logger.Debug("Scene change triggered!");
             StartCoroutine(SceneChangeHandler());
         }
 
