@@ -89,10 +89,101 @@ namespace ParticleOverdrive.UI.Settings
                 SetValue(value);
         }
 
-        protected override string TextForValue(bool value)
+        protected override string TextForValue(bool value) => (value) ? "ON" : "OFF";
+    }
+
+    public abstract class IntSettingsController : IncDecSettingsController
+    {
+        private int _value;
+        protected int _min;
+        protected int _max;
+        protected int _increment;
+
+        protected abstract int GetInitValue();
+        protected abstract void ApplyValue(int value);
+        protected abstract string TextForValue(int value);
+
+
+        public override void Init()
         {
-            return (value) ? "ON" : "OFF";
+            _value = this.GetInitValue();
+            this.RefreshUI();
         }
+
+        public override void ApplySettings()
+        {
+            this.ApplyValue(this._value);
+        }
+
+        private void RefreshUI()
+        {
+            this.text = this.TextForValue(this._value);
+
+            this.enableDec = _value > _min;
+            this.enableInc = _value < _max;
+        }
+
+        public override void IncButtonPressed()
+        {
+            this._value += _increment;
+            if (this._value > _max) this._value = _max;
+
+            this.RefreshUI();
+        }
+
+        public override void DecButtonPressed()
+        {
+            this._value -= _increment;
+            if (this._value < _min) this._value = _min;
+
+            this.RefreshUI();
+        }
+    }
+
+    public class IntViewController : IntSettingsController
+    {
+        public delegate int GetInt();
+        public event GetInt GetValue;
+
+        public delegate void SetInt(int value);
+        public event SetInt SetValue;
+
+        public void SetValues(int min, int max, int increment)
+        {
+            _min = min;
+            _max = max;
+            _increment = increment;
+        }
+
+        public void UpdateIncrement(int increment)
+        {
+            _increment = increment;
+        }
+
+        private int FixValue(int value)
+        {
+            if (value % _increment != 0) value -= (value % _increment);
+            if (value > _max) value = _max;
+            if (value < _min) value = _min;
+
+            return value;
+        }
+
+        protected override int GetInitValue()
+        {
+            int value = 0;
+            if (GetValue != null)
+                value = FixValue(GetValue());
+
+            return value;
+        }
+
+        protected override void ApplyValue(int value)
+        {
+            if (SetValue != null) SetValue(FixValue(value));
+        }
+
+        protected override string TextForValue(int value) => value.ToString();
     }
 
     public class SubMenu
@@ -104,9 +195,14 @@ namespace ParticleOverdrive.UI.Settings
             this.transform = transform;
         }
 
-        public BoolViewController AddBool(string name)
+        public BoolViewController AddBool(string name) => AddToggleSetting<BoolViewController>(name);
+
+        public IntViewController AddInt(string name, int min, int max, int increment)
         {
-            return AddToggleSetting<BoolViewController>(name);
+            var view = AddIntSetting<IntViewController>(name);
+            view.SetValues(min, max, increment);
+
+            return view;
         }
 
         public ListViewController AddList(string name, float[] values)
@@ -146,11 +242,27 @@ namespace ParticleOverdrive.UI.Settings
 
             return newToggleSettingsController;
         }
+
+        public T AddIntSetting<T>(string name) where T : IntSettingsController
+        {
+            var volumeSettings = Resources.FindObjectsOfTypeAll<WindowModeSettingsController>().FirstOrDefault();
+            GameObject newSettingsObject = MonoBehaviour.Instantiate(volumeSettings.gameObject, transform);
+            newSettingsObject.name = name;
+
+            WindowModeSettingsController volume = newSettingsObject.GetComponent<WindowModeSettingsController>();
+            T newToggleSettingsController = (T)ReflectionUtil.CopyComponent(volume, typeof(IncDecSettingsController), typeof(T), newSettingsObject);
+            MonoBehaviour.DestroyImmediate(volume);
+
+            newSettingsObject.GetComponentInChildren<TMP_Text>().text = name;
+
+            return newToggleSettingsController;
+        }
     }
 
     public class SettingsUI : MonoBehaviour
     {
         public static SettingsUI Instance = null;
+
         static bool ready = false;
         public static bool Ready
         {
@@ -163,7 +275,7 @@ namespace ParticleOverdrive.UI.Settings
         static MainSettingsTableView _mainSettingsTableView = null;
         static TableView subMenuTableView = null;
         static MainSettingsTableCell tableCell = null;
-        static TableViewHelper subMenuTableViewHelper;
+        static TableView subMenuTableViewHelper;
 
         static Transform othersSubmenu = null;
 
@@ -173,24 +285,15 @@ namespace ParticleOverdrive.UI.Settings
         static Button _pageDownButton = null;
         static Vector2 buttonOffset = new Vector2(24, 0);
 
-
         public static void OnLoad()
         {
-            if (Instance != null)
-                return;
+            if (Instance != null) return;
 
             new GameObject("SettingsUI").AddComponent<SettingsUI>();
         }
 
-        public static bool IsMenuScene(Scene scene)
-        {
-            return (scene.name == "Menu");
-        }
-
-        public static bool IsGameScene(Scene scene)
-        {
-            return (scene.name == "StandardLevelLoader");
-        }
+        public static bool isMenuScene(Scene scene) => scene.name == "Menu";
+        public static bool isGameScene(Scene scene) => scene.name == "StandardLevelLoader";
 
         public void Awake()
         {
@@ -198,6 +301,7 @@ namespace ParticleOverdrive.UI.Settings
             {
                 Instance = this;
                 SceneManager.activeSceneChanged += SceneManagerOnActiveSceneChanged;
+
                 DontDestroyOnLoad(gameObject);
             }
             else
@@ -210,7 +314,7 @@ namespace ParticleOverdrive.UI.Settings
         {
             try
             {
-                if (IsMenuScene(scene))
+                if (isMenuScene(scene))
                     SetupUI();
             }
             catch (Exception e)
@@ -222,39 +326,41 @@ namespace ParticleOverdrive.UI.Settings
         private static void SetupUI()
         {
             if (mainSettingsMenu == null)
+            {
                 ready = false;
-
-            if (Ready)
-                return;
-
-            try
-            {
-                var _menuMasterViewController = Resources.FindObjectsOfTypeAll<StandardLevelSelectionFlowCoordinator>().First();
-                prompt = ReflectionUtil.GetField<SimpleDialogPromptViewController>(_menuMasterViewController, "_simpleDialogPromptViewController");
-
-                _mainMenuViewController = Resources.FindObjectsOfTypeAll<MainMenuViewController>().First();
-                settingsMenu = Resources.FindObjectsOfTypeAll<SettingsNavigationController>().FirstOrDefault();
-                mainSettingsMenu = Resources.FindObjectsOfTypeAll<MainSettingsMenuViewController>().FirstOrDefault();
-                _mainSettingsTableView = mainSettingsMenu.GetField<MainSettingsTableView>("_mainSettingsTableView");
-                subMenuTableView = _mainSettingsTableView.GetComponentInChildren<TableView>();
-                subMenuTableViewHelper = subMenuTableView.gameObject.AddComponent<TableViewHelper>();
-                othersSubmenu = settingsMenu.transform.Find("Others");
-
-                if (_mainSettingsTableView != null)
-                    AddPageButtons();
-
-                if (tableCell == null)
-                {
-                    tableCell = Resources.FindObjectsOfTypeAll<MainSettingsTableCell>().FirstOrDefault();
-                    // Get a refence to the Settings Table cell text in case we want to change font size, etc
-                    var text = tableCell.GetField<TextMeshProUGUI>("_settingsSubMenuText");
-                }
-
-                ready = true;
             }
-            catch (Exception e)
+
+            if (!Ready)
             {
-                Console.WriteLine("Beat Saver UI: Oops - " + e.Message);
+                try
+                {
+                    var _menuMasterViewController = Resources.FindObjectsOfTypeAll<MainFlowCoordinator>().First();
+                    prompt = ReflectionUtil.GetField<SimpleDialogPromptViewController>(_menuMasterViewController, "_simpleDialogPromptViewController");
+
+                    _mainMenuViewController = Resources.FindObjectsOfTypeAll<MainMenuViewController>().First();
+                    settingsMenu = Resources.FindObjectsOfTypeAll<SettingsNavigationController>().FirstOrDefault();
+                    mainSettingsMenu = Resources.FindObjectsOfTypeAll<MainSettingsMenuViewController>().FirstOrDefault();
+                    _mainSettingsTableView = mainSettingsMenu.GetField<MainSettingsTableView>("_mainSettingsTableView");
+                    subMenuTableView = _mainSettingsTableView.GetComponentInChildren<TableView>();
+                    subMenuTableViewHelper = subMenuTableView.gameObject.AddComponent<TableView>();
+                    othersSubmenu = settingsMenu.transform.Find("OtherSettings");
+
+                    if (_mainSettingsTableView != null)
+                        AddPageButtons();
+
+                    if (tableCell == null)
+                    {
+                        tableCell = Resources.FindObjectsOfTypeAll<MainSettingsTableCell>().FirstOrDefault();
+                        // Get a refence to the Settings Table cell text in case we want to change font size, etc
+                        var text = tableCell.GetField<TextMeshProUGUI>("_settingsSubMenuText");
+                    }
+
+                    ready = true;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Beat Saver UI: Oops - " + e.Message);
+                }
             }
         }
 
@@ -292,8 +398,8 @@ namespace ParticleOverdrive.UI.Settings
                 });
             }
 
-            subMenuTableViewHelper._pageUpButton = _pageUpButton;
-            subMenuTableViewHelper._pageDownButton = _pageDownButton;
+            subMenuTableViewHelper.SetField("_pageUpButton", _pageUpButton);
+            subMenuTableViewHelper.SetField("_pageDownButton", _pageDownButton);
         }
 
         public static void LogComponents(Transform t, string prefix = "=", bool includeScipts = false)
@@ -303,16 +409,20 @@ namespace ParticleOverdrive.UI.Settings
             if (includeScipts)
             {
                 foreach (var comp in t.GetComponents<MonoBehaviour>())
+                {
                     Console.WriteLine(prefix + "-->" + comp.GetType());
+                }
             }
 
             foreach (Transform child in t)
+            {
                 LogComponents(child, prefix + "=", includeScipts);
+            }
         }
 
         public static SubMenu CreateSubMenu(string name)
         {
-            if (!IsMenuScene(SceneManager.GetActiveScene()))
+            if (!isMenuScene(SceneManager.GetActiveScene()))
             {
                 Console.WriteLine("Cannot create settings menu when no in the main scene.");
                 return null;
@@ -325,7 +435,7 @@ namespace ParticleOverdrive.UI.Settings
 
             var newSubMenuInfo = new SettingsSubMenuInfo();
             newSubMenuInfo.SetField("_menuName", name);
-            newSubMenuInfo.SetField("_controller", subMenuGameObject.GetComponent<VRUIViewController>());
+            newSubMenuInfo.SetField("_viewController", subMenuGameObject.GetComponent<VRUIViewController>());
 
             var subMenuInfos = mainSettingsMenu.GetField<SettingsSubMenuInfo[]>("_settingsSubMenuInfos").ToList();
             subMenuInfos.Add(newSubMenuInfo);
@@ -341,96 +451,11 @@ namespace ParticleOverdrive.UI.Settings
             var tempList = container.Cast<Transform>().ToList();
 
             foreach (var child in tempList)
+            {
                 DestroyImmediate(child.gameObject);
+            }
 
             return container;
-        }
-    }
-
-    class TableViewHelper : MonoBehaviour
-    {
-        TableView table;
-        RectTransform viewport;
-
-        public Button _pageUpButton = null;
-        public Button _pageDownButton = null;
-
-        RectTransform _scrollRectTransform
-        {
-            get { return table.GetField<RectTransform>("_scrollRectTransform"); }
-            set { table.SetField("_scrollRectTransform", value); }
-        }
-
-        int _numberOfRows
-        {
-            get { return table.GetField<int>("_numberOfRows"); }
-            set { table.SetField("_numberOfRows", value); }
-        }
-
-        float _rowHeight
-        {
-            get { return table.GetField<float>("_rowHeight"); }
-            set { table.SetField("_rowHeight", value); }
-        }
-
-        float _targetVerticalNormalizedPosition
-        {
-            get { return table.GetField<float>("_targetVerticalNormalizedPosition"); }
-            set { table.SetField("_targetVerticalNormalizedPosition", value); }
-        }
-
-        void Awake()
-        {
-            table = GetComponent<TableView>();
-            viewport = GetComponentsInChildren<RectTransform>().First(x => x.name == "Viewport");
-        }
-
-        public void PageScrollUp()
-        {
-            float scrollStep = GetScrollStep();
-            _targetVerticalNormalizedPosition = Mathf.RoundToInt(_targetVerticalNormalizedPosition / scrollStep + Mathf.Max(1f, GetNumberOfVisibleRows() - 1f)) * scrollStep;
-            if (_targetVerticalNormalizedPosition > 1f)
-            {
-                _targetVerticalNormalizedPosition = 1f;
-            }
-            RefreshScrollButtons();
-            //_scrollRectTransform.sizeDelta = new Vector2(-20f, -10f);
-        }
-
-        public void PageScrollDown()
-        {
-            float scrollStep = GetScrollStep();
-            _targetVerticalNormalizedPosition = Mathf.RoundToInt(_targetVerticalNormalizedPosition / scrollStep - Mathf.Max(1f, GetNumberOfVisibleRows() - 1f)) * scrollStep;
-            if (_targetVerticalNormalizedPosition < 0f)
-            {
-                _targetVerticalNormalizedPosition = 0f;
-            }
-            RefreshScrollButtons();
-            //_scrollRectTransform.sizeDelta = new Vector2(-20f, -10f);
-        }
-
-        public virtual void RefreshScrollButtons()
-        {
-            table.RefreshScrollButtons();
-
-            if (_pageDownButton)
-                _pageDownButton.interactable = !Mathf.Approximately(_targetVerticalNormalizedPosition, 0f);
-
-            if (_pageUpButton)
-                _pageUpButton.interactable = !Mathf.Approximately(_targetVerticalNormalizedPosition, 1f);
-        }
-
-        private float GetNumberOfVisibleRows()
-        {
-            return 6.0f;
-        }
-
-        public virtual float GetScrollStep()
-        {
-            float height = viewport.rect.height;
-            float num = _numberOfRows * _rowHeight - height;
-            int num2 = Mathf.CeilToInt(num / _rowHeight);
-            return 1f / num2;
         }
     }
 }
