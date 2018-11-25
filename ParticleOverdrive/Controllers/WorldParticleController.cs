@@ -31,7 +31,6 @@ namespace ParticleOverdrive.Controllers
                 Logger.Debug($"{action} world particles!");
 
                 _enabled = value;
-                Set();
             }
         }
 
