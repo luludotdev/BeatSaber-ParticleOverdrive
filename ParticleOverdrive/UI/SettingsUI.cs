@@ -285,6 +285,8 @@ namespace ParticleOverdrive.UI.Settings
         static Button _pageDownButton = null;
         static Vector2 buttonOffset = new Vector2(24, 0);
 
+        static bool initialized = false;
+
         public static void OnLoad()
         {
             if (Instance != null) return;
@@ -314,8 +316,11 @@ namespace ParticleOverdrive.UI.Settings
         {
             try
             {
-                if (isMenuScene(scene))
+                if (isMenuScene(scene) && !initialized)
+                {
                     SetupUI();
+                    initialized = true;
+                }
             }
             catch (Exception e)
             {
