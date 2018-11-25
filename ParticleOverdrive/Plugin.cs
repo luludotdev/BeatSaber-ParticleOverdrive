@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reflection;
 using System.Linq;
 using UnityEngine;
@@ -16,8 +16,7 @@ namespace ParticleOverdrive
         public string Name => "Particle Overdive";
         public string Version => "0.2.0";
 
-        private static readonly string[] menuEnv = { "Init", "Menu" };
-        private static readonly string[] gameEnv = { "DefaultEnvironment", "BigMirrorEnvironment", "TriangleEnvironment", "NiceEnvironment" };
+        private static readonly string[] env = { "Init", "Menu", "GameCore", "Credits" };
 
         public static GameObject _controller;
         public static WorldParticleController _particleController;
@@ -50,6 +49,8 @@ namespace ParticleOverdrive
 
         void SceneManagerOnActiveSceneChanged(Scene arg0, Scene scene)
         {
+            Logger.Debug($"Scene Change! {scene.name}");
+
             if (_controller == null)
             {
                 _controller = new GameObject("WorldEffectController");
@@ -68,7 +69,7 @@ namespace ParticleOverdrive
             if (scene.name == "Menu")
                 PluginUI.CreateSettingsUI();
 
-            if (menuEnv.Contains(scene.name) || gameEnv.Contains(scene.name))
+            if (env.Contains(scene.name))
             {
                 _particleController.OnSceneChange(scene);
                 _noiseController.OnSceneChange(scene);
