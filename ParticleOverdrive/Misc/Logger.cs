@@ -12,7 +12,7 @@ namespace ParticleOverdrive.Misc
         public static void Debug(object data)
         {
 #if DEBUG
-            Console.WriteLine($"[Particle Overdrive] {data}");
+            Console.WriteLine($"[Particle Overdrive // DEBUG] {data}");
 #endif
         }
     }
