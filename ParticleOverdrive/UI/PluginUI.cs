@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using IllusionPlugin;
-using ParticleOverdrive.UI.Settings;
+using BeatSaberCustomUI;
 
 namespace ParticleOverdrive.UI
 {
