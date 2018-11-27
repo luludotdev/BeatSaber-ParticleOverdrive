@@ -44,10 +44,17 @@ namespace ParticleOverdrive
                 Console.WriteLine(e);
             }
 
+            SceneManager.sceneLoaded += SceneManager_sceneLoaded;
             SceneManager.activeSceneChanged += SceneManagerOnActiveSceneChanged;
         }
 
-        void SceneManagerOnActiveSceneChanged(Scene arg0, Scene scene)
+        void SceneManager_sceneLoaded(Scene scene, LoadSceneMode loadMode)
+        {
+            if (scene.name == "Menu")
+                PluginUI.CreateSettingsUI();
+        }
+
+        void SceneManagerOnActiveSceneChanged(Scene _, Scene scene)
         {
             Logger.Debug($"Scene Change! {scene.name}");
 
@@ -65,9 +72,6 @@ namespace ParticleOverdrive
                 bool noiseState = ModPrefs.GetBool(ModPrefsKey, "cameraNoise", true, true);
                 _noiseController.Init(noiseState);
             }
-
-            if (scene.name == "Menu")
-                PluginUI.CreateSettingsUI();
 
             if (env.Contains(scene.name))
             {
