@@ -46,7 +46,7 @@ namespace ParticleOverdrive.Controllers
 
             Color32[] pixels = _newNoise.GetPixels32();
             for (int i = 0; i < pixels.Length; i++)
-                pixels[i] = new Color32(0, 0, 0, 200);
+                pixels[i] = new Color32(0, 0, 0, 255);
 
             _newNoise.SetPixels32(pixels);
             _newNoise.Apply();
